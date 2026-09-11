@@ -1,3 +1,8 @@
+- name: Debug output structure
+  run: |
+    pwd
+    find . -maxdepth 4 -type d
+
 name: Run
 
 on:
