@@ -17,9 +17,23 @@ jobs:
           curl -L -o ${{ github.workspace }}/app.deb "${{ github.event.inputs.deb }}"
           dpkg-deb -X ${{ github.workspace }}/app.deb ${{ github.workspace }}/app
 
+          echo "--- extracted structure ---"
+          find ${{ github.workspace }}/app -maxdepth 4 -type d
+
+          # Find the .app bundle wherever it landed (handles both
+          # Applications/*.app and rootless var/jb/Applications/*.app)
+          APP_DIR=$(find ${{ github.workspace }}/app -type d -iname "*.app" -print -quit)
+
+          if [ -z "$APP_DIR" ]; then
+            echo "::error::No .app bundle found inside the extracted deb"
+            exit 1
+          fi
+
+          echo "Found app bundle: $APP_DIR"
+
           mkdir -p ${{ github.workspace }}/ipa/Payload
-          cp -R ${{ github.workspace }}/app/Applications/* ${{ github.workspace }}/ipa/Payload
-          
+          cp -R "$APP_DIR" ${{ github.workspace }}/ipa/Payload/
+
           cd ${{ github.workspace }}/ipa
           zip -r ${{ github.workspace }}/App.ipa .
 
